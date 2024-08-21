@@ -38,15 +38,15 @@ def parse_cigarx_line(line):
     return count_array
 
 
-def run_lastz(query, target):
+def run_lastz(target, query):
     """
     Runs lastz, adds cigarx matches length counts together and returns them as a counter.
     """
-    query = query+"[multiple]"
     target = target+"[multiple]"
+    query = query#+"[multiple]"
 
     res_lastz = sp.run(
-        ['lastz',query,target,"--format=general:length1,idfrac,cigarx", "--ambiguous=iupac", "--chain"],
+        ['lastz',target,query,"--format=general:length1,idfrac,cigarx", "--ambiguous=iupac"],
         capture_output=True,
         check=True,
         encoding="utf-8"
