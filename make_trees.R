@@ -18,22 +18,22 @@ if(interactive()) {
     )
   )
   # if manual execution, the paths and parameters need to be adapted
-
+  results_dir <- "~/Documents/tools/CoreSimul/mash_vs_mosaic/mummer_lastz_2/tree_mummer_results_delta_1000_rrho_0.00e+00_tau_1.00e+00_codon/"
   snakemake <- Snakemake(
     input = list(
-      fitted_params = list.files("~/Documents/results_bacteria_mlds/results_entero_v2/fitted_params/"),
-      inflexion_file = "~/Documents/results_bacteria_mlds/results_entero_v2/inflexion_exists.csv",
-      inflexion_percentage = "~/Documents/results_bacteria_mlds/results_entero_v2/inflexion_by_cluster.csv"
+      fitted_params = list.files(paste0(results_dir, "fitted_params/")),
+      inflexion_file = paste0(results_dir,"inflexion_exists.csv"),
+      inflexion_percentage = paste0(results_dir, "inflexion_by_cluster.csv")
     ),
     output = list(),
     params = list(
-      taxon_csv = "~/Documents/Enterobacteriaceae_repr/misha_taxon_w_annotation_v2.csv",
-      cluster_name = "misha_annotation",
-      fitted_params_dir = "~/Documents/results_bacteria_mlds/results_entero_v2/fitted_params/",
-      results_dir = "~/Documents/results_bacteria_mlds/results_entero_v2/",
+      taxon_csv = "~/Data/simulated_datasets/tree_genomes_delta_1000_rrho_0.00e+00_tau_1.00e+00_codon/taxon.csv",
+      cluster_name = "clade",
+      fitted_params_dir = paste0(results_dir, "fitted_params/"),
+      results_dir = results_dir,
       genome_wise_inflexion = "no",
-      genome_lengths = "~/Documents/results_bacteria_mlds/results_entero_v2/lengths_distributions/",
-      tree_annotation = "family.gtdb",
+      genome_lengths = paste0(results_dir, "lengths_distributions/"),
+      tree_annotation = "clade",
       filter_min_genomes = 1
         ),
     wildcards = list(),
@@ -226,6 +226,10 @@ ggsave(paste0(results_dir, "hist_fitteddistance.png"), difi_hist)
 family_df <- taxon_df %>%
   dplyr::rename(label = all_of(cluster_name))
 
+if (tree_annotation == snakemake@params[["cluster_name"]]) {
+  family_df <- family_df %>%
+    mutate({{tree_annotation}} := label)
+}
 counts_df <- family_df %>%
   select(label, genome) %>%
   group_by(label) %>%
@@ -260,34 +264,5 @@ gh <- gheatmap(p, fam,
   scale_x_ggtree() +
   theme_tree2(legend.position = "bottom",
               legend.box = "vertical", legend.margin = margin())
-## gh <- gh +
-##   geom_facet(panel = "Genome count",
-##              data = counts_df,
-##              geom = geom_col,
-##              aes(x = count),#, fill = Family),
-##              orientation = "y"
-##              )
-## gh <- facet_widths(gh, widths = c(4, 1))
-##   ## theme_tree2(legend.position=c(.05, .85))
-
-## # according to ggtree doc FAQ
-## gh <- gh + xlim_tree(0) + xlim_expand(c(0, 1000), "Genome count")
-
-## d <- data.frame(.panel = c("Tree", "Genome count"),
-##                 lab = c("tau/2", "count"),
-##                 x = c(-1.5e8,100), y = -2)
-
-## ghf <- gh + geom_text(aes(label=lab), data=d) +
-##   coord_cartesian(clip='off') # +
-##   ## theme(plot.margin=margin(6, 6, 40, 6))
-
-## gh <- gh +
-##   geom_facet(panel = "Inflexion percentage",
-##              data = inflexions_per,
-##              geom = geom_col,
-##              aes(x = per_infl),#, fill = Family),
-##              orientation = "y",
-##              scales = "freex")
-
 
 ggsave(paste0(results_dir, tree_annotation, "_tree_big.svg"), gh, width = 8.5, height = 6, dpi = 300)
