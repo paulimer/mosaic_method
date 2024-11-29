@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import argparse
 import sys
 
@@ -11,6 +12,11 @@ def main():
         description="""
         Concatenates single mlds from alignements, saves them. Optionnaly.
         """)
+    parser.add_argument(
+        "--pairs",
+        action="store_true",
+        help="only align pairs of genes from coresimul simulation"
+    )
     parser.add_argument(
         "--threads",
         type=int,
@@ -49,7 +55,7 @@ def main():
         level_list = sorted(taxon_df[args.cluster_name].unique())
         levels = list(itertools.combinations(level_list, 2))
         for level in levels:
-            genome_comps = get_genome_comp(level, args.taxon_csv, "", args.cluster_name, False)
+            genome_comps = get_genome_comp(level, args.taxon_csv, "", args.cluster_name, output_csv=False, pairs=args.pairs)
             full_mld = get_all_mlds(genome_comps, args.from_sqlite_db, threads=args.threads)
             summed_mld = sum_mlds(full_mld)
             binned_mld = bin_mld(

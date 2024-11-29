@@ -13,3 +13,5 @@ test*
 /fitted_params/
 /lastz_florian/
 /unsupervized_genomes_exploration/
+/.snakemake/
+*__pycache__*

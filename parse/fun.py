@@ -10,7 +10,7 @@ import numpy as np
 import sqlite3
 
 
-def get_genome_comp(species, taxon_csv, lastz_res_path, level, output_csv=True):
+def get_genome_comp(species, taxon_csv, lastz_res_path, level, output_csv=True, pairs=False):
     """
     Gets a list of genome comparisons from a genome to taxon csv and two taxa, and "level".
     """
@@ -24,9 +24,14 @@ def get_genome_comp(species, taxon_csv, lastz_res_path, level, output_csv=True):
     if output_csv:
         for g_1, g_2 in itertools.product(genomes_1, genomes_2):
             res += [os.path.join(lastz_res_path, f"{g_1}_vs_{g_2}.csv")]
-    else:
+    elif not output_csv and not pairs:
         for g_1, g_2 in itertools.product(genomes_1, genomes_2):
             res += [(g_1, g_2)]
+    elif pairs:
+        n_simu = len(taxon_df["genome"].unique())//2
+        res = []
+        for i in range(n_simu):
+            res.append([f"{sp}_{i}.fa" for sp in species])
     return res
 
 
@@ -67,42 +72,43 @@ def get_all_mlds(genome_comps, lastz_db_path, threads=1):
     max_len = max([len(l) for l in mld_comps.values()])
     df_mlds = pd.DataFrame.from_dict(mld_comps, orient="index", columns=range(1, max_len + 1))
     df_mlds = df_mlds.fillna(int(0))
-    df_mlds = df_mlds.reset_index(names=["comp"])
+    df_mlds = df_mlds.reset_index()
+    df_mlds = df_mlds.rename(columns={"index": "comp"})
     return df_mlds
 
 
-def parse_florian_mld(path):
-    """
-    Parses Florian's assembly-wise MLD files and merges them into a taxon-wide full_mld.
+# def parse_florian_mld(path):
+#     """
+#     Parses Florian's assembly-wise MLD files and merges them into a taxon-wide full_mld.
 
-    Parameters
-    ----------
-    path: str
-    the path to the directory (named bac1_bac2) where the MLDs are stored
+#     Parameters
+#     ----------
+#     path: str
+#     the path to the directory (named bac1_bac2) where the MLDs are stored
 
-    Returns
-    -------
-    A pandas.DataFrame containing a taxa comparison's MLD
-    """
-    comp_files = [mld_file for mld_file in os.listdir(path) if mld_file.endswith(".MLD")]
-    res = {}
-    for c_f in comp_files:
-        tmp_dic = {}
-        c_f_full = os.path.join(path, c_f)
-        with open(c_f_full, "r") as filein:
-            for line in filein:
-                try:
-                    tmp_dic[line.split()[0]] = int(line.split()[1])
-                except IndexError:
-                    print(line)
-                except:
-                    print("other error")
-                finally:
-                    continue
-        res[c_f.split(".")[0].replace("-", "_")] = tmp_dic
-    res_df = pd.DataFrame.from_dict(res, orient="index")
-    res_df = res_df.rename_axis("comp").reset_index()
-    return res_df
+#     Returns
+#     -------
+#     A pandas.DataFrame containing a taxa comparison's MLD
+#     """
+#     comp_files = [mld_file for mld_file in os.listdir(path) if mld_file.endswith(".MLD")]
+#     res = {}
+#     for c_f in comp_files:
+#         tmp_dic = {}
+#         c_f_full = os.path.join(path, c_f)
+#         with open(c_f_full, "r") as filein:
+#             for line in filein:
+#                 try:
+#                     tmp_dic[line.split()[0]] = int(line.split()[1])
+#                 except IndexError:
+#                     print(line)
+#                 except:
+#                     print("other error")
+#                 finally:
+#                     continue
+#         res[c_f.split(".")[0].replace("-", "_")] = tmp_dic
+#     res_df = pd.DataFrame.from_dict(res, orient="index")
+#     res_df = res_df.rename_axis("comp").reset_index()
+#     return res_df
 
 
 def sum_mlds(mld_comp_df):

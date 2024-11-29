@@ -100,8 +100,28 @@ def lastz_entry(res, con):
     con.commit()
 
 
+def get_genome_comps(taxon_csv, pairs=False):
+    """
+    Generates all genome combinations for a list of clusters
+    """
+    taxon_df = pd.read_csv(taxon_csv)
+    if not pairs:
+        sorted_clusters = sorted(taxon_df["cluster"].unique())
+        genomes_comps = []
+        for cluster_1, cluster_2 in itertools.combinations(sorted_clusters, 2):
+            genomes_1 = taxon_df[taxon_df["cluster"] == cluster_1]["genome"]
+            genomes_2 = taxon_df[taxon_df["cluster"] == cluster_2]["genome"]
+            genomes_comps += list(itertools.product(genomes_1, genomes_2))
+    else:
+        n_simu = len(taxon_df["genome"].unique())//2
+        species = taxon_df["clade"].unique()
+        genomes_comps = []
+        for i in range(n_simu):
+            genomes_comps.append([f"{sp}_{i}.fa" for sp in species])
+    return genomes_comps
 
-def create_lastz_db(taxon_csv, genomes_path, cluster_name, db_name, threads, update=False):
+
+def create_lastz_db(taxon_csv, genomes_path, cluster_name, db_name, threads, update=False, pairs=False):
     """Creates or updates a sqlite3 database from a taxon csv file, generating all necessary alignments"""
     if not update:
         if os.path.exists(db_name):
@@ -125,7 +145,7 @@ def create_lastz_db(taxon_csv, genomes_path, cluster_name, db_name, threads, upd
         # print genome comps and already compared
         print(f"Already in database : {len(already_compared)} comparisons, {len(genomes_comps)} to align, total : {len(sorted_genomes_comps)} comparisons.")
 
-    else:
+    elif not update and not pairs:
         cur.execute("CREATE TABLE lastz (genome1 STRING, genome2 STRING, count_array blob, average_divergence INT);")
         cur.execute("CREATE TABLE taxon (genome STRING, cluster STRING);")
         for _, row in taxon_df.iterrows():
@@ -140,6 +160,8 @@ def create_lastz_db(taxon_csv, genomes_path, cluster_name, db_name, threads, upd
             genomes_2 = [os.path.join(genomes_path, genome) for genome in sorted(genomes_2)]
             genomes_comps += list(itertools.product(genomes_1, genomes_2))
 
+    elif not update and pairs:
+        genomes_comps = get_genome_comps(taxon_csv, pairs=True)
     # run lastz in parallel
     batch_size = 2000
     with concurrent.futures.ProcessPoolExecutor(max_workers=threads) as executor:

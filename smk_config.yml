@@ -1,22 +1,27 @@
-results_dir: "/home/paulimer/Documents/results_bacteria_mlds/test_res"
-taxon_csv: "/home/paulimer/Documents/bacilla_genomes/representative_genomes/taxon.csv"
+results_dir: "/home/paulimer/Documents/tools/CoreSimul/results_mlds_rho_scaled_1000_delta_00005_rho/"
+taxon_csv: "/home/paulimer/Documents/tools/CoreSimul/test_parallel_genes/taxon.csv"
 # always absolute if current dir
-genomes_dir: "/home/paulimer/Documents/bacilla_genomes/representative_genomes_no_plasmid/"
+genomes_dir: "/home/paulimer/Documents/tools/CoreSimul/test_parallel_genes_rho_normalized_1000_delta_00005_rho/"
 lastz_tools_dir: "/home/paulimer/Documents/test_florian/pretreatment/tools/"
-pretreatment_dir: "/home/paulimer/Documents/test_florian/pretreat_temp_genomes/"
+pretreatment_dir: "/home/paulimer/Documents/tools/CoreSimul/coresimul_mlds/temp_genomes/"
 # whether to start from fasta or precomputed assembly-wise MLDs
 from_f_mld: "no"
 f_mlds_dir: "/cluster/CBIO/data1/fmassip/HGT/ProjectMisha/HGTnew/dating_long_distance/results/lastz/"
 # General Parameters
 # either complete, update, or create
 database_state: "create"
-database_name: "test_repr_masked.db"
+database_name: "simul_genes.db"
 max_threads: 8
 mus: 5.0e-9
 muc: 6.0e-11
-delta: 0.55
-cluster_name: "species.gtdb"
+# change if aligner changes
+delta: 0.25
+cluster_name: "clade"
 genome_wise_fit: "no"
 # tree drawing parameter
 filter_min_genomes: 0
 tree_annotation: "family.gtdb"
+#pairs
+pairs: "yes"
+# dont forget to change delta
+aligner: "mummer"

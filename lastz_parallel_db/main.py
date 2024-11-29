@@ -24,6 +24,12 @@ def main():
         help="Update the existing database instead of creating a new one"
     )
     parser.add_argument(
+        "-p",
+        "--pairs",
+        action="store_true",
+        help="only align pairs of genes from coresimul simulation"
+    )
+    parser.add_argument(
         "taxon_csv",
         type=str,
         help="Path to the taxon csv file"

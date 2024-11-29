@@ -65,10 +65,12 @@ rule merge:
         taxon_csv=config["taxon_csv"],
         cluster_name=config["cluster_name"],
         full_mld_dir=config["results_dir"] + "full_mlds/",
-        binned_mld_dir=config["results_dir"] + "binned_mlds/"
+        binned_mld_dir=config["results_dir"] + "binned_mlds/",
+        pairs=lambda wc: "--pairs" if config["pairs"]=="yes" else ""
+
     threads: config["max_threads"]
     shell:
-        "python parse/main.py --threads {threads} --from_sqlite_db {input.database_path} --full_mld {params.full_mld_dir} "
+        "python parse/main.py {params.pairs} --threads {threads} --from_sqlite_db {input.database_path} --full_mld {params.full_mld_dir} "
         "--binned_mld {params.binned_mld_dir} --taxon_csv {params.taxon_csv} --cluster_name {params.cluster_name}"
 
 
