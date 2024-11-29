@@ -8,6 +8,7 @@ import tempfile
 
 import Bio.Seq
 import Bio.SeqIO
+import pandas as pd
 
 
 def remove_AmbiguousIUPAC(genome_path, output_dir):
@@ -38,9 +39,11 @@ def mask_repeats(genome_path, output_dir, lastz_tools_dir):
 
 
 
-def pretreat_genomes(directory, output, lastz_tools_dir, threads=1):
+def pretreat_genomes(directory, taxon_csv, output, lastz_tools_dir, threads=1):
     """Masks repeats and replaces ambiguous IUPAC letters by N"""
-    genomes = [g for g in os.listdir(directory) if g.endswith(("fasta", "fna"))]
+    taxon_df = pd.read_csv(taxon_csv)
+    genomes = taxon_df["genome"].tolist()
+    genomes = [os.path.join(directory, g) for g in genomes if os.path.exists(os.path.join(directory, g))]
     n_genomes = len(genomes)
     os.makedirs(output, exist_ok=True)
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -73,9 +76,14 @@ if __name__ == "__main__":
         help="Directory containing genomes to pretreat"
     )
     parser.add_argument(
+        "taxon_csv",
+        type=str,
+        help="CSV file containing genomes and their taxon"
+    )
+    parser.add_argument(
         "output",
         type=str,
         help="Output directory"
     )
     args = parser.parse_args()
-    pretreat_genomes(args.directory, args.output, args.lastz_tools_dir, args.threads)
+    pretreat_genomes(args.directory, args.taxon_csv, args.output, args.lastz_tools_dir, args.threads)
