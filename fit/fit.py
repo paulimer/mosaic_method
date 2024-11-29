@@ -104,7 +104,7 @@ def fit_params(opt_method, init_pars, empirical_mld, smal_dif, match_lengths, mu
     elif opt_method == "dual-annealing":
         res_opt_full = dual_annealing(
             Lllocal,
-            bounds = [(4, 10), (-15, -4)],
+            bounds = [(1, 25), (-25, -1)],
             args=(
                 empirical_mld,
                 smal_dif,
@@ -118,7 +118,7 @@ def fit_params(opt_method, init_pars, empirical_mld, smal_dif, match_lengths, mu
         )
         res_opt_minus3 = dual_annealing(
             minus3Lllocal,
-            bounds = [(4, 10), (-15, -4)],
+            bounds = [(1, 25), (-25, -1)],
             args=(
                 empirical_mld,
                 smal_dif,
@@ -195,3 +195,20 @@ def plot_surface(min_logtau, max_logtau, min_logrho, max_logrho, num_points, out
 
     # Save the plot to the specified output file
     plt.savefig(output_file, dpi=300)
+
+def plot_residuals(opt_pars, empirical_mld, smal_dif, match_lengths, mus, muc, delta, L0, output_file):
+    """
+    Plots the residuals of the fit, using Tommaso's normalization
+    """
+    mh_calc, mc_calc = theoretical_mld(opt_pars, smal_dif, match_lengths, mus, muc, delta, L0)
+    mt_calc = mh_calc + mc_calc
+    normalized_residuals = (mt_calc - empirical_mld)/np.sqrt(empirical_mld)
+    fig, ax = plt.subplots()
+    ax.scatter(match_lengths, normalized_residuals)
+    ax.hlines(0, min(match_lengths), max(match_lengths), colors='r', linestyles='dashed')
+    ax.set_xscale("log")
+    # ax.set_yscale("log")
+    ax.set_xlabel("Match Length")
+    ax.set_ylabel("Normalized Residuals")
+    plt.savefig(output_file, dpi=300)
+    return normalized_residuals
