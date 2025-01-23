@@ -1,0 +1,18 @@
+results_dir: "/home/paulimer/Documents/tools/CoreSimul/res_conc_genomes"
+taxon_csv: "/home/paulimer/Documents/tools/CoreSimul/conc_genomes/taxon.csv"
+# always absolute if current dir
+genomes_dir: "/home/paulimer/Documents/tools/CoreSimul/conc_genomes"
+# either complete, update, or create
+database_state: "create"
+database_name: "simul_genes.db"
+max_threads: 2
+mus: 5.0e-9
+muc: 6.0e-11
+# change if aligner changes
+delta: 0.25
+aligner: "mummer"
+# tree drawing parameter
+tree_annotation: "clade"
+# sim params
+n_megagenes: 100
+megagene_size: 1e3

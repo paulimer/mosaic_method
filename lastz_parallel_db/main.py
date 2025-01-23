@@ -57,7 +57,7 @@ def main():
         help="The output sqlite file"
     )
     args = parser.parse_args()
-    if not args.aligner in ["lastz", "mummer"]:
+    if not args.aligner in ["lastz", "mummer", "manual"]:
         print("Invalid aligner")
         return
     con = create_lastz_db(args.taxon_csv, args.genomes_path, args.cluster_name, args.output_db, args.threads, args.update, args.pairs, args.aligner)
