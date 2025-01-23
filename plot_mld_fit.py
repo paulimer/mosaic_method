@@ -12,7 +12,11 @@ from fit.fit import *
 def plot_mld_fit(binned_mld, muc, mus, delta, fitted_params, level, L0, outfile=None):
     """Plots the fit of the mosaic model to the MLDs."""
     max_x = binned_mld["match_length"].max()
-    min_y = binned_mld["freq"].min()
+    min_y = binned_mld[binned_mld["freq"] > 0]["freq"].min()
+    print(f"min_y : {min_y}")
+    if binned_mld["freq"].sum() == 0:
+        # mld is empty, do not plot
+        return
     r = np.logspace(0, np.log10(max_x), 1000)
     mh, mc = theoretical_mld(fitted_params, 0.1, r, mus, muc, delta, L0, False)
 
@@ -22,7 +26,7 @@ def plot_mld_fit(binned_mld, muc, mus, delta, fitted_params, level, L0, outfile=
     ax.plot(r, mc, label="mc", color="blue")
     ax.set_xscale("log")
     ax.set_yscale("log")
-    ax.set_ylim(np.log10(min_y/10), None)
+    ax.set_ylim(min_y/10, None)
     ax.legend()
     ax.set_title(f"MLD fit for {level[0]} vs {level[1]}")
     ax.set_xlabel("Match length")

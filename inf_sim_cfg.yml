@@ -8,9 +8,15 @@ database_name: "simul_genes.db"
 max_threads: 2
 mus: 5.0e-9
 muc: 6.0e-11
-# change if aligner changes
-delta: 0.25
-aligner: "mummer"
+# aligner and delta
+aligners:
+  mummer:
+    - 0.25
+  lastz:
+    - 0.55
+    - 0.82
+  manual:
+    - 5
 # tree drawing parameter
 tree_annotation: "clade"
 # sim params
