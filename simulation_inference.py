@@ -3,6 +3,7 @@
 # imports
 import argparse
 import os
+import subprocess as sp
 
 import yaml
 
@@ -51,7 +52,7 @@ def run_inference(cfg, aligner, delta, subfolder=""):
     res_opt_minus3_dict = {}
     for level in levels:
         res_opt_full, res_opt_minus3 = fit_params(
-            "dual-annealing",
+            "Nelder-Mead",
             np.array([8, -5]),
             binned_mlds[level]["freq"],
             0.1,
@@ -62,7 +63,7 @@ def run_inference(cfg, aligner, delta, subfolder=""):
             float(cfg["megagene_size"])*cfg["n_megagenes"],
         )
         if not res_opt_full.success:
-            sys.exit(f"Fitting failed for alignmer{aligner} and delta {delta} in folder {subfolder}")
+            sys.exit(f"Fitting failed for aligner{aligner} and delta {delta} in folder {subfolder}")
         res_opt_full_dict[level] = res_opt_full
         res_opt_minus3_dict[level] = res_opt_minus3
 
@@ -83,6 +84,7 @@ def run_inference(cfg, aligner, delta, subfolder=""):
         )
 
 
+
     # saving output ----------------------------------------------------------------
     os.makedirs(os.path.join(subfolder_path, "binned_mlds"), exist_ok=True)
 
@@ -92,7 +94,8 @@ def run_inference(cfg, aligner, delta, subfolder=""):
     res_list = []
     for level in levels:
         res_list.append({
-            "level": f"{level[0]}_{level[1]}",
+            "species_1": f"{level[0]}",
+            "species_2": f"{level[1]}",
             "log10tau": res_opt_full_dict[level].x[0],
             "log10rho": res_opt_full_dict[level].x[1],
             "minimum": res_opt_full_dict[level].fun,
@@ -101,7 +104,23 @@ def run_inference(cfg, aligner, delta, subfolder=""):
     res_df = pd.DataFrame(res_list)
     res_df["aligner"] = aligner
     res_df["delta"] = delta
+    res_df.to_csv(os.path.join(subfolder_path, "results.csv"), index=False)
 
+    # plot tree
+    if taxon_df["clade"].nunique() > 2:
+        os.makedirs(os.path.join(subfolder_path, "tree/"), exist_ok=True)
+        # TODO output nwk
+        make_trees_args = [
+            "Rscript",
+            "make_trees_simu.R",
+            os.path.join(subfolder_path, "results.csv"),
+            cfg["taxon_csv"],
+            str(aligner),
+            str(delta),
+            os.path.join(subfolder_path, "tree/")
+        ]
+        print(" ".join(make_trees_args))
+        sp.run(make_trees_args, check=True)
     return res_df
 
 if __name__ == "__main__":
